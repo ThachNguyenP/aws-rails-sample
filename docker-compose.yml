@@ -1,0 +1,51 @@
+version: "3"
+services:
+  db:
+    image: postgres:11.1
+    container_name: sample_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    networks:
+      - default
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+  app:
+    tty: true
+    stdin_open: true
+    build:
+      context: .
+      dockerfile: ./rails.Dockerfile
+    container_name: sample_app
+    ports:
+      - '3001:3000'
+    environment:
+      DB_NAME: rails_sample_database
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_HOST: db
+    networks:
+      - default
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+      - bundle_install:/app/vendor/bundle
+      - bundle:/app/.bundle
+  # web:
+  #   build:
+  #     context: .
+  #     dockerfile: ./nginx.Dockerfile
+  #   depends_on:
+  #     - app
+  #   ports:
+  #     - '80:80'
+  #   networks:
+  #     - default
+volumes:
+  postgres-data:
+    driver: local
+  bundle_install:
+    driver: local
+  bundle:
+    driver: local
